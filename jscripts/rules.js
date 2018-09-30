@@ -1,19 +1,20 @@
 var MyDropzone = {
-	
+
 	textarea: '',
 	options: {
-		use_editor: false,
-		use_imgur: true
+		useEditor: false,
+		useImgur: true
 	},
 	lang: {},
-	
+	versionCode: 0,
+
 	init: function() {
-		
-		MyDropzone.options.use_editor = (MyDropzone.exists(MyBBEditor)) ? true : false;
+
+		MyDropzone.options.useEditor = (MyDropzone.exists(MyBBEditor)) ? true : false;
 		MyDropzone.textarea = $('#message');
-		
+
 		Dropzone.autoDiscover = false;
-		
+
 		MyDropzone.inputs = {'dropzone': 1};
 
 		var target = $('#fileupload');
@@ -22,10 +23,12 @@ var MyDropzone = {
 		form.find(':input').filter('[type="hidden"], [name="submit"], [name="newattachment"]').each(function() {
 			MyDropzone.inputs[$(this).attr('name')] = $(this).val();
 		});
-		
+
+		var paramName = (MyDropzone.versionCode > 1818) ? 'attachments[]' : 'attachment';
+
 		var options = {
 			url: form.attr('action'),
-			paramName: 'attachment',
+			paramName: paramName,
 			addRemoveLinks: true,
 			headers: {
 				"Accept": null,
@@ -33,15 +36,15 @@ var MyDropzone = {
 				"X-Requested-With": null
 			},
 			init: function() {
-				
+
 				this.on('sending', function(file, xhr, formData) {
-		
+
 					$.each(MyDropzone.inputs, function(k, v) {
 						formData.append(k, v);
 					});
-		
+
 				});
-				
+
 				this.on('success', function(file, response) {
 
 					if (file.status == 'error') {
@@ -54,11 +57,11 @@ var MyDropzone = {
 
 					// Live update to the attachments quota
 					if (!response.data) {
-						MyDropzone.update_quota(file.size);
+						MyDropzone.updateQuota(file.size);
 					}
 
 				});
-				
+
 				this.on('addedfile', function(file) {
 
 					// Custom duplicates check
@@ -73,7 +76,7 @@ var MyDropzone = {
 					}
 
 				});
-				
+
 				this.on('removedfile', function(file) {
 
 					if (!file.aid) {
@@ -95,46 +98,46 @@ var MyDropzone = {
 						url: form.attr('action'),
 						data: params,
 						success: function() {
-							MyDropzone.update_quota(- file.size); // Live update to attachments quota
+							MyDropzone.updateQuota(- file.size); // Live update to attachments quota
 						}
-						
+
 					});
 
 				});
-				
+
 			}
-			
+
 		};
-		
-		if (MyDropzone.options.remove_confirmation) {
-			options['dictRemoveFileConfirmation'] = MyDropzone.lang.remove_confirmation;
+
+		if (MyDropzone.options.removeConfirmation) {
+			options['dictRemoveFileConfirmation'] = MyDropzone.lang.removeConfirmation;
 		}
-		
+
 		MyDropzone.instance = new Dropzone ('#fileupload', options);
-		
-		if (MyDropzone.options.use_imgur) {
+
+		if (MyDropzone.options.useImgur) {
 			MyDropzone.imgur();
 		}
-		
+
 	},
-	
+
 	imgur: function() {
-		
-		if (!MyDropzone.exists(MyDropzone.imgur_client_id)) {
+
+		if (!MyDropzone.exists(MyDropzone.imgurClientId)) {
 			return false;
 		}
-		
+
 		MyDropzone.instance.on('sending', function(file, xhr, formData) {
 
 			// Imgur support
 			if ($.inArray(file.type, ['image/png','image/jpg','image/jpeg','image/gif']) != -1) {
 				xhr.open('POST', 'https://api.imgur.com/3/image', true);
-				xhr.setRequestHeader('Authorization', 'Client-ID ' + MyDropzone.imgur_client_id);
+				xhr.setRequestHeader('Authorization', 'Client-ID ' + MyDropzone.imgurClientId);
 				formData.append('image', file);
 			}
-			
+
 		});
-		
+
 		MyDropzone.instance.on('success', function(file, response) {
 
 			// Imgur support
@@ -153,14 +156,14 @@ var MyDropzone = {
 					file.deletehash = response.data.deletehash;
 				}
 
-				MyDropzone.notification(MyDropzone.lang.uploaded_to_imgur);
+				MyDropzone.notification(MyDropzone.lang.uploadedToImgur);
 
 				return;
 
 			}
-			
+
 		});
-		
+
 		MyDropzone.instance.on('removedfile', function(file) {
 
 			// Imgur deletion support
@@ -170,7 +173,7 @@ var MyDropzone = {
 					type: 'DELETE',
 					url: 'https://api.imgur.com/3/image/' + file.deletehash,
 					headers: {
-						'Authorization': 'Client-ID ' + MyDropzone.imgur_client_id
+						'Authorization': 'Client-ID ' + MyDropzone.imgurClientId
 					},
 					complete: function(response) {
 						if (response.status == 200) {
@@ -180,7 +183,7 @@ var MyDropzone = {
 								MyDropzone.text.remove('[img]' + file.external_link + '[/img]');
 							}
 
-							MyDropzone.notification(MyDropzone.lang.removed_from_imgur);
+							MyDropzone.notification(MyDropzone.lang.removedFromImgur);
 
 						}
 						else if (response.data && response.data.error) {
@@ -196,18 +199,18 @@ var MyDropzone = {
 			if (!file.aid) {
 				return;
 			}
-			
+
 		});
-		
+
 	},
-	
-	update_quota: function(filesize) {
-							
+
+	updateQuota: function(filesize) {
+
 		var target = $('strong.quota'),
 			quota;
 		var text = target.text();
 		var value = Number(text.slice(0, -3));
-		
+
 		// Normalize to bytes
 		if (text.indexOf('KB')) {
 			quota = value * 1024;
@@ -215,71 +218,71 @@ var MyDropzone = {
 		else {
 			quota = value * 1024 * 1024;
 		}
-		
+
 		// Back to KB
 		quota = (quota + filesize) / 1024;
-		
+
 		if (quota.toFixed(0) == 0) {
 			return target.text('N/A');
 		}
-		
+
 		if (quota < 1000) {
 			return target.text(quota.toFixed(2) + ' KB');
 		}
-		
+
 		// And back to MB
 		return target.text( (quota / 1024).toFixed(2) + ' MB');
-		
+
 	},
-	
+
 	text: {
-		
+
 		add: function(text) {
-			
+
 			if (!MyDropzone.exists(text)) {
 				return false;
 			}
-			
-			if (MyDropzone.options.use_editor) {
+
+			if (MyDropzone.options.useEditor) {
 				MyBBEditor.insert(text);
 			}
 			else {
 				MyDropzone.textarea.insertAtCaret(text);
 			}
-			
+
 			return true;
-			
+
 		},
-		
+
 		remove: function(search) {
-			
-			if (MyDropzone.options.use_editor) {
-				
+
+			if (MyDropzone.options.useEditor) {
+
 				MyBBEditor.val(
 					MyBBEditor.val().split(search).join('')
 				);
-				
+
 			}
 			else {
-							
+
 				MyDropzone.textarea.val(function(i, text) {
 					return text.split(search).join('');
 				});
-				
+
 			}
-			
+
 		}
-			
+
 	},
-	
+
 	notification: function(text) {
 		return $.jGrowl(text);	
 	},
-	
+
 	exists: function(variable) {
 		return (typeof variable !== 'undefined' && variable !== null && variable);
 	}
-	
+
 };
 
 jQuery.fn.extend({

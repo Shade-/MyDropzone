@@ -9,20 +9,21 @@
 </td>
 </tr>
 
-<script type="text/javascript" src="jscripts/dropzone.js"></script>
-<script type="text/javascript" src="jscripts/mydropzone/rules.js"></script>
+<script type="text/javascript" src="jscripts/dropzone.js?v=1.1"></script>
+<script type="text/javascript" src="jscripts/rules.js?v=1.1"></script>
 <script type="text/javascript">
-	
-	MyDropzone.options.use_imgur = Number('{$mybb->settings['mydropzone_use_imgur']}');
-	MyDropzone.imgur_client_id = '{$mybb->settings['mydropzone_imgur_client_id']}';
-	MyDropzone.options.remove_confirmation = Number('{$mybb->settings['mydropzone_remove_confirmation']}');
-	
-	MyDropzone.lang.remove_confirmation = '{$lang->mydropzone_remove_confirmation}';
-	MyDropzone.lang.uploaded_to_imgur = '{$lang->mydropzone_uploaded_to_imgur}';
-	MyDropzone.lang.removed_from_imgur = '{$lang->mydropzone_removed_from_imgur}';
-	
+
+	MyDropzone.options.useImgur = Number('{$mybb->settings['mydropzone_use_imgur']}');
+	MyDropzone.imgurClientId = '{$mybb->settings['mydropzone_imgur_client_id']}';
+	MyDropzone.options.removeConfirmation = Number('{$mybb->settings['mydropzone_remove_confirmation']}');
+	MyDropzone.versionCode = Number('{$mybb->version_code}');
+
+	MyDropzone.lang.removeConfirmation = '{$lang->mydropzone_remove_confirmation}';
+	MyDropzone.lang.uploadedToImgur = '{$lang->mydropzone_uploaded_to_imgur}';
+	MyDropzone.lang.removedFromImgur = '{$lang->mydropzone_removed_from_imgur}';
+
 	$(document).ready(function() {
 		MyDropzone.init();
 	});
-	
+
 </script>
