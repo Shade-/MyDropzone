@@ -1,0 +1,27 @@
+<script type="text/javascript">
+	
+	$(document).ready(function() {
+		
+		if (typeof MyDropzone !== 'undefined') {
+
+			var mockFile = {
+				name: "{$attachment['filename']}",
+				size: {$attachment['filesize']},
+				type: "{$attachment['filetype']}",
+				aid: "{$attachment['aid']}",
+				accepted: true
+			};
+
+			MyDropzone.instance.emit("addedfile", mockFile);
+
+			// Make sure that there is no progress bar, etc...
+			MyDropzone.instance.emit("complete", mockFile);
+
+			// Ensure the files[] array gets populated
+			MyDropzone.instance.files.push(mockFile);
+			
+		}
+		
+	});
+	
+</script>

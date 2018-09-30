@@ -1,0 +1,28 @@
+<tr>
+<td class="trow1" colspan="3">
+	<div class="dropzone fileupload" id="fileupload"></div>
+	<span class="dropzone_images_external">
+		<img src="images/icons/photo.png" />
+		{$lang->mydropzone_images_external}
+	</span>
+	{$attach_add_options}	
+</td>
+</tr>
+
+<script type="text/javascript" src="jscripts/dropzone.js"></script>
+<script type="text/javascript" src="jscripts/mydropzone/rules.js"></script>
+<script type="text/javascript">
+	
+	MyDropzone.options.use_imgur = Number('{$mybb->settings['mydropzone_use_imgur']}');
+	MyDropzone.imgur_client_id = '{$mybb->settings['mydropzone_imgur_client_id']}';
+	MyDropzone.options.remove_confirmation = Number('{$mybb->settings['mydropzone_remove_confirmation']}');
+	
+	MyDropzone.lang.remove_confirmation = '{$lang->mydropzone_remove_confirmation}';
+	MyDropzone.lang.uploaded_to_imgur = '{$lang->mydropzone_uploaded_to_imgur}';
+	MyDropzone.lang.removed_from_imgur = '{$lang->mydropzone_removed_from_imgur}';
+	
+	$(document).ready(function() {
+		MyDropzone.init();
+	});
+	
+</script>
