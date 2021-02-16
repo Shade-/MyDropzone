@@ -9,10 +9,14 @@
 				size: {$attachment['filesize']},
 				type: "{$attachment['filetype']}",
 				aid: "{$attachment['aid']}",
-				accepted: true
+				accepted: true,
+				mock: true
 			};
 
 			MyDropzone.instance.emit("addedfile", mockFile);
+			if ("{$attachment['thumbnail']}".length > 0) {
+				MyDropzone.instance.emit("thumbnail", mockFile, "uploads/{$attachment['thumbnail']}");
+			}
 
 			// Make sure that there is no progress bar, etc...
 			MyDropzone.instance.emit("complete", mockFile);

@@ -15,7 +15,7 @@ var MyDropzone = {
 
 		Dropzone.autoDiscover = false;
 
-		MyDropzone.inputs = {'dropzone': 1};
+		MyDropzone.inputs = {dropzone: 1};
 
 		var target = $('#fileupload');
 		var form = target.parents('form');
@@ -29,12 +29,12 @@ var MyDropzone = {
 		var options = {
 			url: form.attr('action'),
 			paramName: paramName,
-			addRemoveLinks: true,
 			headers: {
 				"Accept": null,
 				"Cache-Control": null,
 				"X-Requested-With": null
 			},
+			previewTemplate: $('#previewTemplate').get(0).innerHTML,
 			init: function() {
 
 				this.on('sending', function(file, xhr, formData) {
@@ -60,6 +60,15 @@ var MyDropzone = {
 						MyDropzone.updateQuota(file.size);
 					}
 
+					// Fresh files
+					var insert = $(file.previewElement).find('.insert');
+					if (file.aid) {
+					    insert.attr('data-aid', file.aid);
+                    }
+                    else {
+                        insert.remove();
+                    }
+
 				});
 
 				this.on('addedfile', function(file) {
@@ -74,6 +83,12 @@ var MyDropzone = {
 							}
 						}
 					}
+
+					// Old files from editpost
+					var insert = $(file.previewElement).find('.insert');
+					if (file.aid && file.mock) {
+					    insert.attr('data-aid', file.aid);
+                    }
 
 				});
 
@@ -90,8 +105,8 @@ var MyDropzone = {
 						params[k] = v;
 					});
 
-					params['attachmentaid'] = file.aid;
-					params['attachmentact'] = 'remove';
+					params.attachmentaid = file.aid;
+					params.attachmentact = 'remove';
 
 					$.ajax({
 						type: 'POST',
@@ -110,7 +125,7 @@ var MyDropzone = {
 		};
 
 		if (MyDropzone.options.removeConfirmation) {
-			options['dictRemoveFileConfirmation'] = MyDropzone.lang.removeConfirmation;
+			options.dictRemoveFileConfirmation = MyDropzone.lang.removeConfirmation;
 		}
 
 		MyDropzone.instance = new Dropzone ('#fileupload', options);
@@ -118,6 +133,11 @@ var MyDropzone = {
 		if (MyDropzone.options.useImgur) {
 			MyDropzone.imgur();
 		}
+
+		// Insert into post
+		$(document).on('click', '.dropzone .insert', function(e) {
+    		return MyDropzone.text.add('[attachment=' + $(this).attr('data-aid') + ']');
+		});
 
 	},
 
@@ -212,7 +232,7 @@ var MyDropzone = {
 		var value = Number(text.slice(0, -3));
 
 		// Normalize to bytes
-		if (text.indexOf('KB')) {
+		if (text.indexOf('KB') > -1) {
 			quota = value * 1024;
 		}
 		else {

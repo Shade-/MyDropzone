@@ -1,13 +1,13 @@
 <?php
 /**
  * MyDropzone
- * 
+ *
  * Replace MyBB attachments with a modern solution using AJAX.
  *
  * @package MyDropzone
  * @author  Shade <shad3-@outlook.com>
- * @license Copyrighted
- * @version 1.1
+ * @license MIT https://opensource.org/licenses/MIT
+ * @version 1.2
  */
 
 if (!defined('IN_MYBB')) {
@@ -56,9 +56,9 @@ function mydropzone_info()
 	return [
 		'name'          =>  'MyDropzone',
 		'description'   =>  'Replace MyBB attachments with a modern solution using AJAX.' . $description,
-		'website'       =>  'https://www.mybboost.com',
+		'website'       =>  'https://www.mybboost.com/forum-mydropzone',
 		'author'        =>  'Shade',
-		'version'       =>  '1.1',
+		'version'       =>  '1.2',
 		'compatibility' =>  '18*',
 	];
 }
@@ -112,7 +112,7 @@ function mydropzone_install()
 	// Add stylesheets
 	$PL->stylesheet('mydropzone.css', file_get_contents(dirname(__FILE__) . '/MyDropzone/stylesheets/mydropzone.css'));
 
-	// Add templates	   
+	// Add templates
 	$dir       = new DirectoryIterator(dirname(__FILE__) . '/MyDropzone/templates');
 	$templates = [];
 	foreach ($dir as $file) {
@@ -199,6 +199,7 @@ function mydropzone_apply_attachment_edits($apply = false)
 
 	$PL or require_once PLUGINLIBRARY;
 
+    $errors = [];
 	$edits = [
 		[
 			'search' => [
@@ -278,7 +279,7 @@ function mydropzone_ad()
 	$plugins = $cache->read('shade_plugins');
 	if (!in_array($mybb->user['uid'], (array) $plugins['MyDropzone']['ad_shown'])) {
 
-		flash_message('Thank you for using MyDropzone! You might also be interested in other great plugins on <a href="https://www.mybboost.com">MyBBoost</a>, where you can also get support for MyDropzone itself.<br /><small>This message will not be shown again to you.</small>', 'success');
+		flash_message('Thank you for downloading MyDropzone! You might also be interested in other great plugins at <a href="https://www.mybboost.com">MyBBoost</a>.<br /><small>This message will not be shown again to you.</small>', 'success');
 
 		$plugins['MyDropzone']['ad_shown'][] = $mybb->user['uid'];
 		$cache->update('shade_plugins', $plugins);
@@ -365,7 +366,7 @@ function mydropzone_handle_attachments(&$args)
 
 function mydropzone_quickreply()
 {
-	global $mybb, $forumpermissions, $pid, $db, $templates, $lang, $attachbox, $theme;
+	global $mybb, $forumpermissions, $pid, $db, $templates, $lang, $attachbox, $theme, $thread;
 
 	if ($mybb->input['action'] != 'thread') {
 		return false;
@@ -373,19 +374,13 @@ function mydropzone_quickreply()
 
 	$lang->load('mydropzone');
 
-	// Copy of newreply.php, lines 1045-1130 @ MyBB 1.8.19
-	// Get a listing of the current attachments.
+	// Copy of newreply.php, lines 1058-1143 @ MyBB 1.8.21
+		// Get a listing of the current attachments.
 	if($mybb->settings['enableattachments'] != 0 && $forumpermissions['canpostattachments'] != 0)
 	{
 		$attachcount = 0;
-		if($pid)
-		{
-			$attachwhere = "pid='$pid'";
-		}
-		else
-		{
-			$attachwhere = "posthash='".$db->escape_string($posthash)."'";
-		}
+		$attachwhere = "posthash='".$db->escape_string(md5($thread['tid'].$mybb->user['uid'].random_str()))."'";
+
 		$attachments = '';
 		$query = $db->simple_select("attachments", "*", $attachwhere);
 		while($attachment = $db->fetch_array($query))
